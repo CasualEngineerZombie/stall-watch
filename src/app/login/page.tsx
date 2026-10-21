@@ -1,9 +1,33 @@
 import type { Metadata } from "next";
+import {
+  OPEN_GRAPH,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  SITE_URL,
+  TWITTER,
+} from "@/lib/seo";
 import { BrandLockup } from "@/components/brand-lockup";
 import { signIn } from "./actions";
 
 export const metadata: Metadata = {
-  title: "Sign in",
+  title: { absolute: SITE_TITLE },
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/login",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  openGraph: OPEN_GRAPH,
+  twitter: TWITTER,
 };
 
 export default async function LoginPage({
@@ -13,8 +37,35 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams;
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Stall Watch",
+    url: `${SITE_URL}/login`,
+    description: SITE_DESCRIPTION,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    inLanguage: "en",
+    featureList: [
+      "Finish selection tracking",
+      "Five-day stall detection",
+      "In-app alerts",
+    ],
+    publisher: {
+      "@type": "Organization",
+      name: "Reverie3D",
+      url: "https://www.reverie3d.com",
+    },
+  };
+
   return (
     <main className="auth-shell">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+        }}
+      />
       <section className="auth-visual">
         <div className="auth-visual-top">
           <BrandLockup tone="light" />

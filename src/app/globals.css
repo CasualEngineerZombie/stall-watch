@@ -276,38 +276,27 @@ strong {
 }
 
 .brand-mark {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  width: 30px;
-  height: 30px;
-  background: var(--ink);
-}
-
-.brand-mark > span {
   display: block;
-  width: 2px;
-  height: 12px;
-  background: var(--brand-off-white);
+  flex: none;
+  width: 26px;
+  height: 30px;
+  overflow: visible;
 }
 
-.brand-mark > span + span {
-  background: var(--brand-taupe);
+.brand-mark-plane--base {
+  fill: var(--ink);
 }
 
-.brand-mark--light {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.45);
+.brand-mark-plane--accent {
+  fill: var(--brand-taupe);
 }
 
-.brand-mark--light > span {
-  background: var(--brand-taupe);
+.brand-lockup--light .brand-mark-plane--base {
+  fill: var(--brand-off-white);
 }
 
-.brand-mark--light > span + span {
-  background: var(--brand-off-white);
+.brand-lockup--light .brand-mark-plane--accent {
+  fill: var(--brand-taupe);
 }
 
 .brand-copy {
@@ -320,9 +309,9 @@ strong {
 .brand-wordmark {
   font-family: var(--font-display), Georgia, serif;
   font-size: 17px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
@@ -2015,7 +2004,7 @@ input:focus-visible {
   }
 
   .brand-mark {
-    width: 27px;
+    width: 23px;
     height: 27px;
   }
 

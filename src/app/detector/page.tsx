@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NoAccess } from "@/components/no-access";
 import { formatDateTime, formatDuration } from "@/lib/format";
+import { NO_INDEX } from "@/lib/seo";
 import { getSession } from "@/lib/session";
 import type { JobRunRow } from "@/lib/types";
 import { runDetectorNow } from "./actions";
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Detector",
+  robots: NO_INDEX,
 };
 
 export default async function DetectorPage({

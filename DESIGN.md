@@ -1,5 +1,5 @@
 Candidate: Rian Barriga
-Hours spent: 7
+Hours spent: 9
 
 # Stall Watch — design note
 
@@ -38,11 +38,11 @@ result keeps that visual language without pretending the internal tool is the ma
 site.
 
 This is a translation, not a clone. No Reverie3D photography, logo files or copy entered
-this repository. The Stall Watch mark — two paused strokes — and the wordmark are
-original. The reference's image-led hero becomes a typographic, rule-led login panel
-because this product is a quiet internal ledger, not a sales page. The point of the
-redesign is that a builder opening a stalled selection should feel the same care the
-brand puts into a finished room: calm, precise, unhurried.
+this repository. The Stall Watch mark — two offset planes that read as a pause and as a
+door held ajar — and the wordmark are original. The reference's image-led hero becomes a
+typographic, rule-led login panel because this product is a quiet internal ledger, not a
+sales page. The point of the redesign is that a builder opening a stalled selection should
+feel the same care the brand puts into a finished room: calm, precise, unhurried.
 
 ### Foundations
 
@@ -82,6 +82,26 @@ columns and metrics use tabular figures. The scale is editorial rather than dash
 page titles 44–68 px, the login statement 48–84 px, section titles 28–38 px, room names
 23–28 px, project names 21–25 px, body 13–14 px, labels 8.5–10 px.
 
+### Identity — The Threshold
+
+The symbol is two offset planes: the left is near-black with a cut top corner, the right
+is taupe with a cut bottom corner. The pair is deliberately readable twice — as a pause
+at 16 px, and as a door held ajar at poster scale. It is an original silhouette; the
+reference's bird-like mark was not traced, cropped or reproduced. The cut corners, not a
+container or an effect, give the mark its ownable edge.
+
+The wordmark is Cinzel 400, uppercase, tracked at `0.15em`; the byline is Montserrat 500.
+The in-app lockup uses live text so the header stays selectable, accessible and sharp at
+every density. The supplied SVGs outline the type for handoff and for contexts without
+the webfont. The mark never takes a shadow, gradient, outline or tile in normal use.
+Clear space is the width of the gap between the planes (`10/64` of the symbol); minimum
+sizes are 16 px for the favicon and 24 px for the standalone symbol.
+
+The identity kit lives in `public/brand/`: two-colour, light, mono and white symbols; dark
+and light horizontal lockups; app, maskable and favicon sources; and the share-card
+source. The deployed derivatives are `src/app/icon.svg`, `src/app/apple-icon.png`,
+`src/app/favicon.ico`, `public/icons/*` and `public/og.png`.
+
 ### Layout and surfaces
 
 The content shell is 1360 px at its widest, with 20–56 px gutters and a generous bottom
@@ -99,10 +119,10 @@ metric bands, echoing the reference's three-column process section. Nothing floa
 
 ### Components
 
-- **Header:** bone background, 1 px rule, original pause-bar mark, Cinzel wordmark,
-  centered tracked navigation, account identity at right. The active page gets a 1 px
-  underline. The only client component is `NavLinks`; it reads `usePathname` and holds no
-  protected data.
+- **Header:** bone background, 1 px rule, the Threshold mark, Cinzel wordmark, centered
+  tracked navigation, account identity at right. The active page gets a 1 px underline.
+  The only client component is `NavLinks`; it reads `usePathname` and holds no protected
+  data.
 - **Buttons:** 44 px minimum height, 3 px radius, uppercase Montserrat. Black primary,
   hairline outline, and a quiet ghost for Clear/Mark as read. Hover states are
   monochrome; no gradient or shadow.
@@ -148,13 +168,32 @@ text as well as colour. Motion is limited to a short fade-and-rise on page heads
 login content, disabled under `prefers-reduced-motion`. At 390 px the document has no
 horizontal overflow; the only wide element, the detector log, scrolls inside its panel.
 
+### Search and sharing
+
+Stall Watch is a private operational tool, so search is deliberately narrow. The default
+metadata is `noindex, nofollow`; `/login` is the only public, indexable URL. It sets its
+own canonical to `/login`, permits indexing, and adds `WebApplication` JSON-LD. The app
+routes and project detail are noindex at the page level, carry an `X-Robots-Tag`, and are
+disallowed in `robots.txt`. `/` only redirects into the app and is not in the sitemap.
+
+`src/lib/seo.ts` is the single source for the title, description, site origin, share card
+and noindex policy. `metadataBase` resolves from `NEXT_PUBLIC_SITE_URL`, Vercel's
+production URL, or `localhost` in that order. The login page's 1200 × 630 `/og.png`
+(source `public/brand/stall-watch-og.svg`) and its Twitter large card reuse the dark panel,
+hairlines, the Threshold mark and login statement. The web manifest declares a standalone
+app with a bone background, a bone theme (matching the light app chrome) and
+192/512/maskable icons. The public metadata routes bypass the auth proxy so crawlers and
+installers never receive a login redirect.
+
 ### Source of truth
 
 `src/app/globals.css` owns the tokens and components. `src/app/layout.tsx` owns the font
-variables, header and footer; `src/components/brand-lockup.tsx` owns the mark;
-`src/components/nav-links.tsx` owns the active nav state. Pages use those primitives
-rather than one-off colours or sizes. If the product grows, extend the tokens and add a
-component pattern here before adding a new visual language.
+variables, header and footer; `src/components/brand-lockup.tsx` owns the live mark;
+`src/lib/seo.ts` owns the public title, description, origin, share card and index policy;
+`public/brand/` owns the handoff SVGs and the share-card source; deployed icons and the
+share card live in `src/app/`, `public/icons/` and `public/og.png`. Pages use
+those primitives rather than one-off colours or sizes. If the product grows, extend the
+tokens and add a component pattern here before adding a new visual language.
 
 ## Non-goals
 

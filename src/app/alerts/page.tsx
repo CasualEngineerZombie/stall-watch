@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { NoAccess } from "@/components/no-access";
 import { formatDateTime } from "@/lib/format";
+import { NO_INDEX } from "@/lib/seo";
 import { getSession } from "@/lib/session";
 import type { AlertRow } from "@/lib/types";
 import { markAllRead, markRead } from "./actions";
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Alerts",
+  robots: NO_INDEX,
 };
 
 export default async function AlertsPage({

@@ -204,6 +204,9 @@ running; this is fine for a demo, and the production schedule lives in the hoste
 3. Environment Variables (Production and Preview):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - optional: `NEXT_PUBLIC_SITE_URL` when the public domain differs from the Vercel
+     production URL. This is only used for canonical and share-image URLs; it is not a
+     credential.
 4. Deploy. These values are inlined at build time; if you change them, redeploy.
 5. In Supabase → Authentication → URL Configuration, set the Site URL to the Vercel
    domain. Add `http://localhost:3000` for local development.
@@ -211,16 +214,22 @@ running; this is fine for a demo, and the production schedule lives in the hoste
 Do **not** add `SUPABASE_SERVICE_ROLE_KEY`, a database URL, or `CRON_SECRET`. The app
 never needs them; the detector runs inside Postgres.
 
+The public share card is `public/og.png`; the browser tab, Apple touch icon and web
+manifest live in `src/app/` and `public/icons/`. `/robots.txt`, `/sitemap.xml` and
+`/manifest.webmanifest` are intentionally outside the auth redirect.
+
 ## 9. Rebuild checklist
 
 - [ ] `npm ci`
 - [ ] `supabase db push --include-seed` (or `supabase db reset` locally)
 - [ ] pg_cron enabled, schedule migration applied
 - [ ] four auth users created, `link-test-users.sql` run
-- [ ] `.env.local` has exactly the two public values
+- [ ] `.env.local` has exactly the two required Supabase values
 - [ ] `npm run lint && npm run typecheck && npm run build`
 - [ ] `npm run test:db` on a fresh database
-- [ ] Vercel has the same two values, and no secrets
+- [ ] Vercel has the same two Supabase values (plus the optional site URL), and no secrets
+- [ ] `/og.png` is 1200 × 630; `/robots.txt`, `/sitemap.xml` and `/manifest.webmanifest`
+      are reachable without a session
 
 ## Troubleshooting
 

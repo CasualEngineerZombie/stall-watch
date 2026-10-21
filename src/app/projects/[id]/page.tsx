@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { NoAccess } from "@/components/no-access";
@@ -7,6 +8,7 @@ import {
   formatDays,
   formatStatus,
 } from "@/lib/format";
+import { NO_INDEX } from "@/lib/seo";
 import { getSession } from "@/lib/session";
 import type {
   ProjectStatusRow,
@@ -16,6 +18,11 @@ import type {
 import { clearSelection, setSelection } from "../actions";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Project",
+  robots: NO_INDEX,
+};
 
 export default async function ProjectPage({
   params,

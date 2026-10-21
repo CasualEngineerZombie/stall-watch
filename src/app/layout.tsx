@@ -2,6 +2,13 @@ import type { Metadata, Viewport } from "next";
 import { Cinzel, Montserrat, Raleway } from "next/font/google";
 import type { ReactNode } from "react";
 import { getSession } from "@/lib/session";
+import {
+  NO_INDEX,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from "@/lib/seo";
 import { signOut } from "@/app/auth/actions";
 import { BrandLockup } from "@/components/brand-lockup";
 import { NavLinks } from "@/components/nav-links";
@@ -29,12 +36,30 @@ const display = Cinzel({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Stall Watch — Reverie3D",
-    template: "%s · Stall Watch",
+    default: SITE_TITLE,
+    template: "%s — Stall Watch",
   },
-  description:
-    "Finish selection oversight for Reverie3D builders. See every project, and know the moment one goes quiet.",
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: "Reverie3D", url: "https://www.reverie3d.com" }],
+  creator: "Reverie3D",
+  publisher: "Reverie3D",
+  category: "Business",
+  // Private by default. The login page opts back in; protected routes never do.
+  robots: NO_INDEX,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
 };
 
 export const viewport: Viewport = {

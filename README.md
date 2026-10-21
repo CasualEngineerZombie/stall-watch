@@ -33,7 +33,7 @@ fetching, no service-role key.
 
 The full rebuild — Supabase project, migrations, seed, pg_cron, test users, Vercel — is in
 [`SETUP.md`](./SETUP.md). The short version, once the project exists and `.env.local` has
-the two public values:
+the two public Supabase values:
 
 ```bash
 npm ci
@@ -60,8 +60,11 @@ The app was exercised in a real browser (Edge via Playwright) against the local 
 stack: sign-in, Builder A / Builder B isolation, saving a finish, the live stalled badge
 clearing after fresh activity, a first detector run (3 projects flagged, 3 alerts) and a
 second run (3 flagged, 0 alerts), marking an alert read, the late-change bonus alert, and
-a builder being denied `/detector` with a 404. The database suite in `npm run test:db`
-covers the same security and detector behaviour at the SQL boundary.
+a builder being denied `/detector` with a 404. The public surface was checked separately:
+`/login` is indexable and canonical, the private routes are noindex, `/og.png` is
+1200 × 630, and `/robots.txt`, `/sitemap.xml` and `/manifest.webmanifest` load without a
+session. The database suite in `npm run test:db` covers the same security and detector
+behaviour at the SQL boundary.
 
 ## How the pieces fit
 
@@ -103,7 +106,13 @@ src/app/detector/         staff-only run history + Run now
 src/app/*/actions.ts      server actions
 src/lib/supabase/         SSR client, session refresh, env guard
 src/lib/session.ts        current user + membership/role lookup
+src/lib/seo.ts            public title, description, origin and index policy
 src/lib/types.ts          row types used by the UI
+public/brand/             handoff SVGs, icon sources and the share-card source
+public/og.png             1200 × 630 Open Graph / Twitter card
+src/app/robots.ts         public crawl rules; private app routes disallowed
+src/app/sitemap.ts        the single public login URL
+src/app/manifest.ts       installable web-app metadata
 supabase/migrations/      the whole schema; source of truth
 supabase/tests/           bootstrap + behavioural SQL tests
 scripts/test-db.mjs       applies the above to a disposable database

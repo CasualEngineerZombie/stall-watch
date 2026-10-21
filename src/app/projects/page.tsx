@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { NoAccess } from "@/components/no-access";
 import { formatDate, formatDays, formatStatus } from "@/lib/format";
+import { NO_INDEX } from "@/lib/seo";
 import { getSession } from "@/lib/session";
 import type { ProjectStatusRow } from "@/lib/types";
 
@@ -9,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Projects",
+  robots: NO_INDEX,
 };
 
 export default async function ProjectsPage() {
