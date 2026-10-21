@@ -23,8 +23,9 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/stall_test npm run test
 4. `stall_detector_test.sql` — the assertions.
 
 `psql` must be on `PATH` (override with `PSQL`), and `ON_ERROR_STOP=1` is set, so the first
-failed assertion fails the run. The seed requires the database owner because it sets
-`session_replication_role = replica`; the CI service runs as `postgres`.
+failed assertion fails the run. The seed requires the database owner because it temporarily
+disables the two insert-side history triggers while it loads; the CI service runs as
+`postgres`.
 
 ## What is covered
 

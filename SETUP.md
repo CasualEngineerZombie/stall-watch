@@ -54,9 +54,9 @@ If your CLI version rejects `--include-seed`, run the seed yourself as the owner
 psql "postgresql://postgres:<password>@<host>:5432/postgres" -v ON_ERROR_STOP=1 -f supabase/seed.sql
 ```
 
-The seed disables triggers for the load (`session_replication_role = replica`), so run it
-as `postgres`, not through the Data API. It creates three orgs and nine projects, and
-leaves `public.users` empty on purpose.
+The seed temporarily disables the two insert-side history triggers while it loads, then
+re-enables them; run it as `postgres` (the table owner), not through the Data API. It
+creates three orgs and nine projects, and leaves `public.users` empty on purpose.
 
 Check the schema landed:
 
