@@ -41,6 +41,13 @@ supabase db push --include-seed
 `db push` applies every file in `supabase/migrations/` in filename order and records them
 in `supabase_migrations.schema_migrations`. `--include-seed` then runs `supabase/seed.sql`.
 
+**Expose the `builder` schema.** Creating it in a migration is not enough for the hosted
+Data API. Dashboard → **Project Settings → API → Exposed schemas** → add `builder` (keep
+`public`). Never add `private`: that schema holds the RLS helpers and trigger functions,
+and it must stay unreachable. Locally this comes from `supabase/config.toml`; on a hosted
+project the dashboard is the switch. The app's `.schema("builder")` calls return
+`PGRST106` until you do this.
+
 If your CLI version rejects `--include-seed`, run the seed yourself as the owner:
 
 ```bash
@@ -98,6 +105,11 @@ Create these four, each with a password you choose and do not commit:
 | `mia@builder-a.test` | Builder A | member (optional) |
 
 The `trg_auth_users_mirror` trigger copies each one into `public.users` automatically.
+
+Also turn off **Authentication → Sign In / Providers → Allow new users to sign up** on
+the hosted project. `supabase/config.toml` already does this for the local stack, but
+hosted projects default to on, and the Auth API would accept a sign-up even though the app
+has no form for it. Admin-created users still work with sign-up disabled.
 
 Then run `supabase/link-test-users.sql` in the SQL editor (or with `psql`). It checks that
 all three required users exist in `public.users` and stops with a clear message if the
