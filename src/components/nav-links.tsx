@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LinkPending } from "@/components/link-pending";
 
 export function NavLinks({ isStaff }: { isStaff: boolean }) {
   const pathname = usePathname();
@@ -27,7 +28,8 @@ export function NavLinks({ isStaff }: { isStaff: boolean }) {
             className={active ? "nav-link is-active" : "nav-link"}
             aria-current={active ? "page" : undefined}
           >
-            {link.label}
+            <span>{link.label}</span>
+            <LinkPending />
           </Link>
         );
       })}

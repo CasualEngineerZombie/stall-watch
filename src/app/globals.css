@@ -243,6 +243,35 @@ strong {
   color: #ffffff;
 }
 
+/* Inline navigation hint. The size is always reserved so pending feedback
+   cannot move the label or reflow a table row. */
+.link-pending {
+  display: inline-block;
+  flex: none;
+  width: 5px;
+  height: 5px;
+  margin-left: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+  vertical-align: middle;
+}
+
+.link-pending.is-pending {
+  opacity: 1;
+  transform: scale(1);
+  animation: link-pending-pulse 1.2s ease-in-out infinite;
+}
+
+.text-link .link-pending,
+.back-link .link-pending {
+  margin-left: 0;
+}
+
 /* ── header ─────────────────────────────────────────────────────────────── */
 
 .site-header {
@@ -342,6 +371,8 @@ strong {
 
 .nav-link {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   padding: 6px 0;
   font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif;
   font-size: 10px;
@@ -631,6 +662,28 @@ strong {
 
 .btn-block {
   width: 100%;
+}
+
+.btn:disabled {
+  cursor: progress;
+}
+
+.btn.is-pending {
+  pointer-events: none;
+}
+
+.btn-label {
+  display: inline-block;
+}
+
+.btn-spinner {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 650ms linear infinite;
 }
 
 .field {
@@ -1657,7 +1710,84 @@ input:focus-visible {
   text-transform: uppercase;
 }
 
+/* ── route loader ───────────────────────────────────────────────────────── */
+
+.route-loader {
+  display: grid;
+  place-items: center;
+  min-height: clamp(360px, 68vh, 760px);
+  padding: clamp(64px, 11vh, 128px) 20px;
+}
+
+.route-loader-inner {
+  width: min(100%, 320px);
+  text-align: center;
+}
+
+.route-loader-brand {
+  display: flex;
+  justify-content: center;
+}
+
+.route-loader .brand-mark {
+  width: 30px;
+  height: 35px;
+}
+
+.route-loader .brand-wordmark {
+  font-size: 19px;
+}
+
+.route-loader-track {
+  position: relative;
+  width: 180px;
+  height: 1px;
+  margin: 32px auto 16px;
+  overflow: hidden;
+  background: var(--line);
+}
+
+.route-loader-track span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  background: var(--brand-taupe-dark);
+  animation: route-sweep 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.route-loader-label {
+  font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--label);
+}
+
 /* ── motion ─────────────────────────────────────────────────────────────── */
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes link-pending-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes route-sweep {
+  from {
+    transform: translateX(-110%);
+  }
+
+  to {
+    transform: translateX(340%);
+  }
+}
 
 @keyframes fade-rise {
   from {
@@ -2084,5 +2214,22 @@ input:focus-visible {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .route-loader-track span {
+    width: 42%;
+    animation: none;
+    opacity: 0.55;
+    transform: none;
+  }
+
+  .btn-spinner {
+    animation: none;
+    opacity: 0.55;
+  }
+
+  .link-pending.is-pending {
+    animation: none;
+    opacity: 0.6;
   }
 }

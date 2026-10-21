@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LinkPending } from "@/components/link-pending";
 import { NoAccess } from "@/components/no-access";
+import { SubmitButton } from "@/components/submit-button";
 import {
   formatDate,
   formatDateTime,
@@ -91,6 +93,7 @@ export default async function ProjectPage({
     <main className="shell">
       <Link href="/projects" className="back-link">
         <span aria-hidden="true">←</span> All projects
+        <LinkPending />
       </Link>
 
       <div className="page-head detail-head">
@@ -269,12 +272,12 @@ export default async function ProjectPage({
                                 required
                                 aria-label={`${slot.room} ${slot.category} product`}
                               />
-                              <button
-                                type="submit"
+                              <SubmitButton
                                 className="btn btn-small btn-primary"
+                                pendingLabel="Saving…"
                               >
                                 Save
-                              </button>
+                              </SubmitButton>
                             </form>
                             {selection ? (
                               <form
@@ -284,12 +287,12 @@ export default async function ProjectPage({
                                   slot.id,
                                 )}
                               >
-                                <button
-                                  type="submit"
+                                <SubmitButton
                                   className="btn btn-small btn-ghost"
+                                  pendingLabel="Clearing…"
                                 >
                                   Clear
-                                </button>
+                                </SubmitButton>
                               </form>
                             ) : null}
                           </div>

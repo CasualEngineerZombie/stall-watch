@@ -12,6 +12,7 @@ import {
 import { signOut } from "@/app/auth/actions";
 import { BrandLockup } from "@/components/brand-lockup";
 import { NavLinks } from "@/components/nav-links";
+import { SubmitButton } from "@/components/submit-button";
 import "./globals.css";
 
 const heading = Raleway({
@@ -94,9 +95,12 @@ export default async function RootLayout({
                   <span className="account-email">{user.email}</span>
                 </div>
                 <form action={signOut}>
-                  <button type="submit" className="btn btn-small btn-outline">
+                  <SubmitButton
+                    className="btn btn-small btn-outline"
+                    pendingLabel="Signing out…"
+                  >
                     Sign out
-                  </button>
+                  </SubmitButton>
                 </form>
               </div>
             </div>

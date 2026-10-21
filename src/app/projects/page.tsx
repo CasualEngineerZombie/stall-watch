@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LinkPending } from "@/components/link-pending";
 import { NoAccess } from "@/components/no-access";
 import { formatDate, formatDays, formatStatus } from "@/lib/format";
 import { NO_INDEX } from "@/lib/seo";
@@ -118,6 +119,7 @@ export default async function ProjectsPage() {
                           className="project-name"
                         >
                           {project.name}
+                          <LinkPending />
                         </Link>
                         <span className="project-org">
                           {project.org_name}

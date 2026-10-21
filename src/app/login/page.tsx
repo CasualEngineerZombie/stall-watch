@@ -7,6 +7,7 @@ import {
   TWITTER,
 } from "@/lib/seo";
 import { BrandLockup } from "@/components/brand-lockup";
+import { SubmitButton } from "@/components/submit-button";
 import { signIn } from "./actions";
 
 export const metadata: Metadata = {
@@ -130,9 +131,12 @@ export default async function LoginPage({
                 required
               />
             </label>
-            <button type="submit" className="btn btn-primary btn-block">
+            <SubmitButton
+              className="btn btn-primary btn-block"
+              pendingLabel="Signing in…"
+            >
               Sign in
-            </button>
+            </SubmitButton>
           </form>
 
           <p className="auth-note">

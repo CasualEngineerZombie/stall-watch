@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LinkPending } from "@/components/link-pending";
 import { NoAccess } from "@/components/no-access";
+import { SubmitButton } from "@/components/submit-button";
 import { formatDateTime } from "@/lib/format";
 import { NO_INDEX } from "@/lib/seo";
 import { getSession } from "@/lib/session";
@@ -49,9 +51,12 @@ export default async function AlertsPage({
         </div>
         {unread > 0 ? (
           <form action={markAllRead}>
-            <button type="submit" className="btn btn-outline">
+            <SubmitButton
+              className="btn btn-outline"
+              pendingLabel="Marking all…"
+            >
               Mark all as read
-            </button>
+            </SubmitButton>
           </form>
         ) : null}
       </div>
@@ -112,17 +117,18 @@ export default async function AlertsPage({
                       className="text-link"
                     >
                       Open project <span aria-hidden="true">↗</span>
+                      <LinkPending />
                     </Link>
                     {read ? (
                       <span className="read-state">Read</span>
                     ) : (
                       <form action={markRead.bind(null, alert.id)}>
-                        <button
-                          type="submit"
+                        <SubmitButton
                           className="btn btn-small btn-ghost"
+                          pendingLabel="Marking…"
                         >
                           Mark as read
-                        </button>
+                        </SubmitButton>
                       </form>
                     )}
                   </div>

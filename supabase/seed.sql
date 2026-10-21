@@ -7,10 +7,10 @@
 -- as long as they have defaults or are nullable. Columns this file sets that you might not
 -- expect: created_at / updated_at on selections (backdated), and actor_kind on history.
 --
--- TRIGGERS ARE OFF while this runs (session_replication_role = replica), so your history and
--- updated_at triggers don't overwrite the backdated timestamps. That also means foreign keys
--- are NOT checked during the load (Postgres enforces them with triggers). The data here is
--- consistent, so that's fine, but don't copy this pattern into application code.
+-- The insert-side history triggers are disabled only while the seed inserts rows, then
+-- re-enabled. The seed does not rely on session state, because the Supabase CLI may execute
+-- its statements on more than one connection; a temp table or session_replication_role
+-- would not survive that. Foreign keys are checked, and the data below is consistent.
 -- Check constraints, NOT NULL and defaults still apply.
 --
 -- SCENARIOS (what your stall detector should conclude on its first run):
@@ -38,8 +38,6 @@
 --
 -- TRAP: selections.updated_at is NOT a measure of builder activity. Unit 7C's staff change
 -- makes it one day old. Compute the stall from selection_history.actor_kind.
-
-set session_replication_role = replica;
 
 -- ── Orgs ────────────────────────────────────────────────────────────────────────────────────
 insert into public.orgs (id, name, org_type) values
@@ -95,13 +93,20 @@ select p.org_id, p.id, s.room, s.category
 
 -- ── Selection events ────────────────────────────────────────────────────────────────────────
 -- Every set / change / clear, in order. History is loaded from these as-is, and the current
--- selection for each slot is the latest event (unless that event is a clear).
-create temp table seed_events (
-  project_name text, room text, category text,
-  action text, product_name text, actor_kind text, days_ago numeric
-);
+-- selection for each slot is derived from that history below.
+--
+-- A CTE rather than a temp table: the Supabase CLI may execute the seed on more than one
+-- connection, and a temp table is not visible outside its session.
+--
+-- The history is supplied directly, so suppress the late-change fan-out while it loads.
+-- Both this trigger and the selections history trigger are re-enabled at the end.
+alter table builder.selection_history disable trigger trg_history_late_change;
 
-insert into seed_events values
+with seed_events (
+  project_name, room, category,
+  action, product_name, actor_kind, days_ago
+) as (
+  values
   -- Lot 12: 5 of 8 filled; last builder activity 7 days ago → STALLED
   ('Lot 12', 'Kitchen',      'Countertop', 'set',    'Calacatta Quartz 3cm',        'builder', 15),
   ('Lot 12', 'Kitchen',      'Backsplash', 'set',    'White Gloss Subway 3x12',     'builder', 15),
@@ -140,9 +145,8 @@ insert into seed_events values
   ('Unit 7C', 'Kitchen',     'Countertop', 'set',    'Concrete Look Quartz',        'builder', 13),
   ('Unit 7C', 'Kitchen',     'Backsplash', 'set',    'Terracotta 2x8',              'builder', 11),
   ('Unit 7C', 'Living',      'Flooring',   'set',    'Ash Grey LVP 7in',            'builder', 9),
-  ('Unit 7C', 'Kitchen',     'Backsplash', 'change', 'Clay 2x8', 'staff', 1);
-
--- History, exactly as above.
+  ('Unit 7C', 'Kitchen',     'Backsplash', 'change', 'Clay 2x8', 'staff', 1)
+)
 insert into builder.selection_history
   (org_id, slot_id, action, product_name, changed_by, actor_kind, changed_at)
 select sl.org_id, sl.id, e.action, e.product_name, null, e.actor_kind,
@@ -151,21 +155,26 @@ select sl.org_id, sl.id, e.action, e.product_name, null, e.actor_kind,
   join builder.projects p       on p.name = e.project_name
   join builder.project_slots sl on sl.project_id = p.id and sl.room = e.room and sl.category = e.category;
 
--- Current selections: the latest event per slot, unless it was a clear.
+-- Current selections: the latest event per slot, unless it was a clear. Derive them from
+-- the history just written, so the current state and the audit trail cannot disagree.
+-- The history trigger is suppressed for this insert because the history rows already exist.
+alter table builder.selections disable trigger trg_selections_history;
+
 insert into builder.selections
   (org_id, slot_id, product_name, selected_by, created_at, updated_at)
-select org_id, slot_id, product_name, null, at, at
+select org_id, slot_id, product_name, null, changed_at, changed_at
   from (
-    select distinct on (sl.id)
-           sl.org_id, sl.id as slot_id, e.action, e.product_name,
-           now() - make_interval(secs => e.days_ago * 86400) as at
-      from seed_events e
-      join builder.projects p       on p.name = e.project_name
-      join builder.project_slots sl on sl.project_id = p.id and sl.room = e.room and sl.category = e.category
-     order by sl.id, e.days_ago asc
+    select distinct on (slot_id)
+           org_id, slot_id, action, product_name, changed_at
+      from builder.selection_history
+     where org_id in (
+       '00000000-0000-0000-0000-0000000000a0',
+       '00000000-0000-0000-0000-0000000000b0'
+     )
+     order by slot_id, changed_at desc
   ) latest
  where action <> 'clear';
 
-drop table seed_events;
+alter table builder.selections enable trigger trg_selections_history;
+alter table builder.selection_history enable trigger trg_history_late_change;
 
-set session_replication_role = origin;

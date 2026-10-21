@@ -1,5 +1,5 @@
 Candidate: Rian Barriga
-Hours spent: 9
+Hours spent: 8
 
 # Stall Watch — design note
 

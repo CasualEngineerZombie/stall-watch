@@ -1,4 +1,5 @@
 import { signOut } from "@/app/auth/actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export function NoAccess() {
   return (
@@ -12,9 +13,9 @@ export function NoAccess() {
           administrator to add you to an org.
         </p>
         <form action={signOut}>
-          <button type="submit" className="btn btn-outline">
+          <SubmitButton className="btn btn-outline" pendingLabel="Signing out…">
             Sign out
-          </button>
+          </SubmitButton>
         </form>
       </section>
     </main>

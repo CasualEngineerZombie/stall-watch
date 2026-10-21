@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NoAccess } from "@/components/no-access";
+import { SubmitButton } from "@/components/submit-button";
 import { formatDateTime, formatDuration } from "@/lib/format";
 import { NO_INDEX } from "@/lib/seo";
 import { getSession } from "@/lib/session";
@@ -59,9 +60,9 @@ export default async function DetectorPage({
           </p>
         </div>
         <form action={runDetectorNow}>
-          <button type="submit" className="btn btn-primary">
+          <SubmitButton className="btn btn-primary" pendingLabel="Running…">
             Run now
-          </button>
+          </SubmitButton>
         </form>
       </div>
 
