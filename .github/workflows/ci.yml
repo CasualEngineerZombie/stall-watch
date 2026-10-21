@@ -57,4 +57,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install psql
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - run: npm run test:db
