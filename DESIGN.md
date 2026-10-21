@@ -129,6 +129,10 @@ metric bands, echoing the reference's three-column process section. Nothing floa
 - **Forms:** 48 px fields with silver hairline borders, 3 px radius and a taupe focus
   ring. Field labels are tracked caps. The slot form keeps the current product name in
   the input, so Save is always a visible confirmation.
+- **Loading:** route changes use the shared `PageLoader` — the Threshold lockup, a
+  hairline sweep and a `role="status"` label — while server-action buttons change their
+  label and show a small ring. Links carry a fixed-size pending dot, so the first click
+  is acknowledged before the route fallback arrives.
 - **Status:** stalled is a rust-on-blush rectangular badge with a small square marker,
   not a red pill. The live view's status is a square dot plus words, so colour is never
   the only signal. Success and failure use muted olive and rust respectively.
@@ -165,7 +169,8 @@ visible `:focus-visible` ring, a skip link, 44 px minimum controls, 48 px fields
 tables with captions and scope, explicit form labels, `aria-current` on the active nav,
 `role="alert"` / `role="status"` for flashes, and `<time>` for timestamps. Status is always
 text as well as colour. Motion is limited to a short fade-and-rise on page heads and the
-login content, disabled under `prefers-reduced-motion`. At 390 px the document has no
+login content, the loader's hairline sweep, and the pending indicators on links and
+buttons; all are disabled under `prefers-reduced-motion`. At 390 px the document has no
 horizontal overflow; the only wide element, the detector log, scrolls inside its panel.
 
 ### Search and sharing
