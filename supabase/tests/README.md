@@ -40,8 +40,9 @@ failed assertion fails the run. The seed requires the database owner because it 
 - The stalled set is exactly **Lot 12, Unit 4B, Unit 7C**, including the Unit 7C trap
   (recent staff activity must not reset the builder's quiet clock).
 - The detector creates one alert per builder admin, is idempotent on a second run, records
-  `projects_flagged` separately from `alerts_created`, and creates a new alert after a
-  re-stall.
+  `projects_flagged` separately from `alerts_created`, creates a new alert after a
+  re-stall, and keeps a `failed` run row with its error while rolling back half-written
+  alerts.
 - A builder change on a `revision` project creates a staff `late_change` alert; a staff
   change does not.
 - `authenticated` can update `alerts.read_at` but not `message`, `user_id` or `read_at`

@@ -580,3 +580,54 @@ begin
            (select count(*) from builder.job_runs)));
 end;
 $$;
+
+-- ── 12. A failed run survives, with its error, and the next run recovers ─────────────
+
+-- Force the alerts insert to fail for the duration of one run. NOT VALID skips the rows
+-- already there but still rejects new ones. This is the brief's failure trap: the run row
+-- is inserted before the work, the work rolls back, and the function returns normally so
+-- the failure row is not carried away by a re-raise.
+alter table builder.alerts
+  add constraint alerts_test_force_failure check (false) not valid;
+
+do $$
+declare
+  v_run uuid;
+  v_status text;
+  v_error text;
+  v_alerts_before integer;
+  v_alerts_after integer;
+begin
+  select count(*) into v_alerts_before from builder.alerts;
+
+  v_run := builder._run_stall_detector('manual');
+
+  select status, error_message into v_status, v_error
+    from builder.job_runs
+   where id = v_run;
+
+  perform pg_temp.assert_true(v_status = 'failed',
+    format('a failed run must be recorded as failed, got %s', v_status));
+  perform pg_temp.assert_true(v_error is not null and v_error <> '',
+    'a failed run must keep its sqlstate and message');
+
+  select count(*) into v_alerts_after from builder.alerts;
+  perform pg_temp.assert_true(v_alerts_after = v_alerts_before,
+    'the failed attempt must not leave half-written alerts behind');
+end;
+$$;
+
+alter table builder.alerts drop constraint alerts_test_force_failure;
+
+do $$
+declare
+  v_run uuid;
+  v_status text;
+begin
+  v_run := builder._run_stall_detector('manual');
+
+  select status into v_status from builder.job_runs where id = v_run;
+  perform pg_temp.assert_true(v_status = 'succeeded',
+    format('the detector must recover once the obstacle is gone, got %s', v_status));
+end;
+$$;
