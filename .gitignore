@@ -18,7 +18,14 @@ next-env.d.ts
 # vercel
 .vercel
 
+# supabase cli local state
+supabase/.branches/
+supabase/.temp/
+
 # misc
 .DS_Store
 *.log
 coverage/
+
+# trial materials — not part of the deliverable
+/Automation Engineer Trial - Brief.pdf

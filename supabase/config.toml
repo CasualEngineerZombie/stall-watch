@@ -1,0 +1,51 @@
+# Supabase local development config.
+#
+# `builder` must be exposed through the Data API: the app calls `.schema("builder")`.
+# `private` is intentionally NOT listed — it must never be reachable over /rest/v1.
+# `public` is exposed for the identity tables and memberships.
+project_id = "stall-watch"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "builder"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = false
+enable_anonymous_sign_ins = false
+
+[auth.email]
+# The email *provider* stays enabled so password sign-in works. Public sign-up is off
+# globally (`[auth] enable_signup = false`); accounts are created by staff through the
+# dashboard or admin API.
+enable_signup = true
+double_confirm_changes = false
+enable_confirmations = false
+
+[storage]
+enabled = false
