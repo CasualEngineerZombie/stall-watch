@@ -26,12 +26,143 @@ inside the app, without anyone going looking.
   A failed run survives with its error message.
 - Each user can read only their own alerts, and can change only `read_at`.
 
+## Design system — Reverie3D, translated
+
+### Reference and method
+
+The visual reference is Reverie3D's public
+[Builders & Developers](https://www.reverie3d.com/builders-and-developers) page. I read
+its public stylesheet and computed styles at 1440 px, and captured the page at 1440 and
+390 px, to pull out the palette, type families, radius, rules and section rhythm. The
+result keeps that visual language without pretending the internal tool is the marketing
+site.
+
+This is a translation, not a clone. No Reverie3D photography, logo files or copy entered
+this repository. The Stall Watch mark — two paused strokes — and the wordmark are
+original. The reference's image-led hero becomes a typographic, rule-led login panel
+because this product is a quiet internal ledger, not a sales page. The point of the
+redesign is that a builder opening a stalled selection should feel the same care the
+brand puts into a finished room: calm, precise, unhurried.
+
+### Foundations
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--brand-near-black` | `#1a1a1a` | body ink, dark bands, footer, login panel |
+| `--brand-taupe` | `#c7bcb1` | accent rules, brand mark, dark-panel labels |
+| `--brand-taupe-mid` | `#a89f95` | decorative dots and watermark only |
+| `--brand-taupe-dark` | `#8b8177` | focus ring and large decorative numerals |
+| `--brand-taupe-light` | `#e4ddd6` | hairlines and quiet fills |
+| `--brand-off-white` | `#f7f5f3` | page canvas |
+| `--brand-silver` | `#d4d4d4` | strong rules and input borders |
+| `--brand-silver-light` | `#ebebeb` | quiet controls where a lighter fill is needed |
+
+The reference's near-black / bone / taupe palette is carried exactly. The one deliberate
+departure is reading text: the reference's small taupe labels sit around 2.5:1 on white,
+which is not acceptable for an operational app. Reading copy uses `--muted:#6b655f`
+(~5.3:1 on bone) and small labels use `--label:#6f655c` (~5.2:1). Taupe stays decorative.
+The rust signal (`#873d2d` on `#f6ebe6`) and muted olive success (`#4d5a49` on
+`#eef0ea`) are restrained extensions used only for stalled/error and succeeded states,
+always paired with words. Surfaces are square or 3 px; there are no drop shadows.
+
+### Typography
+
+- **Raleway** for display and headings, weights 200 and 300. The oversized, thin line is
+  the reference's signature; it is used for page titles, room names, metric values and
+  alert messages.
+- **Montserrat** for UI and body, weights 400–600. It carries navigation, labels,
+  buttons, form fields, tables and long copy.
+- **Cinzel** for the wordmark and footer, echoing the reference's display logotype
+  without reusing its mark.
+
+All three are open Google fonts loaded through `next/font/google`, so they are
+self-hosted at build time and there is no third-party font request at runtime. Uppercase
+micro-labels track at `0.16–0.22em` and are used for labels, never for sentences. Numeric
+columns and metrics use tabular figures. The scale is editorial rather than dashboard:
+page titles 44–68 px, the login statement 48–84 px, section titles 28–38 px, room names
+23–28 px, project names 21–25 px, body 13–14 px, labels 8.5–10 px.
+
+### Layout and surfaces
+
+The content shell is 1360 px at its widest, with 20–56 px gutters and a generous bottom
+margin. The sticky header is 80 px on desktop. Pages open with the same pattern: a tiny
+uppercase eyebrow, a thin display title, a short lede, optional right-aligned metric, then
+a full-width rule. That repeated opening is what makes four different screens feel like
+one product.
+
+Data is presented as a ledger, not a field of cards. Project rows are separated by
+hairlines, with a small index numeral, the project name in Raleway and the builder name
+in tracked caps. On the project page, rooms are white panels with 1 px borders; slots are
+rows inside them, not individual boxes. The only dark surfaces in the app are the stall
+band, the login visual, the footer and the detector/alert accents. Vertical rules divide
+metric bands, echoing the reference's three-column process section. Nothing floats.
+
+### Components
+
+- **Header:** bone background, 1 px rule, original pause-bar mark, Cinzel wordmark,
+  centered tracked navigation, account identity at right. The active page gets a 1 px
+  underline. The only client component is `NavLinks`; it reads `usePathname` and holds no
+  protected data.
+- **Buttons:** 44 px minimum height, 3 px radius, uppercase Montserrat. Black primary,
+  hairline outline, and a quiet ghost for Clear/Mark as read. Hover states are
+  monochrome; no gradient or shadow.
+- **Forms:** 48 px fields with silver hairline borders, 3 px radius and a taupe focus
+  ring. Field labels are tracked caps. The slot form keeps the current product name in
+  the input, so Save is always a visible confirmation.
+- **Status:** stalled is a rust-on-blush rectangular badge with a small square marker,
+  not a red pill. The live view's status is a square dot plus words, so colour is never
+  the only signal. Success and failure use muted olive and rust respectively.
+- **Project page:** a dark stall band carries the important sentence, followed by a
+  three-cell metric band (selected, quiet for, due) and room-by-room panels. The band
+  links to the open slots instead of inventing a modal.
+- **Alerts:** hairline rows, a square unread marker, tracked kind label, timestamp, and
+  the alert sentence set large enough to read without opening the project. Read rows
+  recede; Mark as read stays visible.
+- **Detector:** three-cell summary, then one bordered run-log panel. Status is a dot plus
+  word. The failure row keeps its error visible in monospace.
+- **Sign in:** a dark editorial panel (line grid, thin circle, oversized numeral
+  watermark) beside a bone form panel. The mark is original; the statement is product
+  copy, not reference copy. On mobile the visual becomes a compact 390 px masthead so the
+  Sign in button remains visible in a 844 px viewport.
+- **Empty and 404 states:** the same type and rule system, not generic browser text. They
+  explain what is missing and return the user to Projects.
+
+### Responsive behaviour
+
+Breakpoints at 1100, 900, 720 and 520 px. The header collapses to two rows at 900 px,
+hiding account metadata but keeping Sign out and all navigation. Page metrics move below
+the title. The three-cell bands stack. The project ledger keeps Project, Selections and
+the stall badge on the smallest screen; quiet days and due date move into a single compact
+meta line under the project name, so the row stays scannable without horizontal scrolling.
+Slot rows stack, forms go full width and buttons remain at least 44 px. The login screen
+becomes one column; the dark panel is capped at 390 px on a phone so the primary action
+is visible without scrolling.
+
+### Accessibility and craft
+
+The redesign improves on the reference where an app must: darker reading labels, a
+visible `:focus-visible` ring, a skip link, 44 px minimum controls, 48 px fields, semantic
+tables with captions and scope, explicit form labels, `aria-current` on the active nav,
+`role="alert"` / `role="status"` for flashes, and `<time>` for timestamps. Status is always
+text as well as colour. Motion is limited to a short fade-and-rise on page heads and the
+login content, disabled under `prefers-reduced-motion`. At 390 px the document has no
+horizontal overflow; the only wide element, the detector log, scrolls inside its panel.
+
+### Source of truth
+
+`src/app/globals.css` owns the tokens and components. `src/app/layout.tsx` owns the font
+variables, header and footer; `src/components/brand-lockup.tsx` owns the mark;
+`src/components/nav-links.tsx` owns the active nav state. Pages use those primitives
+rather than one-off colours or sizes. If the product grows, extend the tokens and add a
+component pattern here before adding a new visual language.
+
 ## Non-goals
 
 Email/SMS and any outside notification; sign-up, invites, password reset, magic links;
-CRUD screens for orgs, members and slots; styling/design-system work; optimistic
-conflict handling for `lock_version` in the UI; product catalogues, file uploads or
-per-slot notes. These are deliberately out of scope per the brief.
+CRUD screens for orgs, members and slots; a component library, CSS framework, icon package
+or design tooling; optimistic conflict handling for `lock_version` in the UI; product
+catalogues, file uploads or per-slot notes. The visual system is bespoke CSS on top of the
+existing server components so it stays within the brief and inside the repo.
 
 ## Data and permissions
 
