@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { NoAccess } from "@/components/no-access";
 import { formatDateTime } from "@/lib/format";
@@ -6,6 +7,10 @@ import type { AlertRow } from "@/lib/types";
 import { markAllRead, markRead } from "./actions";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Alerts",
+};
 
 export default async function AlertsPage({
   searchParams,
@@ -29,19 +34,20 @@ export default async function AlertsPage({
   const unread = alerts.filter((alert) => !alert.read_at).length;
 
   return (
-    <main className="page">
+    <main className="shell">
       <div className="page-head">
         <div>
+          <p className="eyebrow">Notifications</p>
           <h1>Alerts</h1>
-          <p className="muted">
+          <p className="page-lede">
             {unread === 0
-              ? "Nothing unread."
-              : `${unread} unread ${unread === 1 ? "alert" : "alerts"}.`}
+              ? "Nothing unread. The detector and the late-change trigger will leave anything new here."
+              : `${unread} unread ${unread === 1 ? "alert" : "alerts"}. Quiet projects and late finish changes land here.`}
           </p>
         </div>
         {unread > 0 ? (
           <form action={markAllRead}>
-            <button type="submit" className="btn">
+            <button type="submit" className="btn btn-outline">
               Mark all as read
             </button>
           </form>
@@ -60,53 +66,68 @@ export default async function AlertsPage({
       ) : null}
 
       {alerts.length === 0 ? (
-        <div className="card empty-card">
-          <h2>No alerts</h2>
-          <p className="muted">
+        <section className="empty-state">
+          <p className="eyebrow">No alerts</p>
+          <h2>Nothing needs your attention.</h2>
+          <p>
             You are all caught up. Alerts appear here when a project goes quiet,
             or when a builder changes a finish after revision.
           </p>
-        </div>
+        </section>
       ) : (
         <ul className="alert-list">
-          {alerts.map((alert) => (
-            <li
-              key={alert.id}
-              className={alert.read_at ? "card alert is-read" : "card alert"}
-            >
-              <div className="alert-head">
-                <span
-                  className={
-                    alert.kind === "stall"
-                      ? "badge badge-stalled"
-                      : "badge badge-info"
-                  }
-                >
-                  {alert.kind === "stall" ? "Stall" : "Late change"}
-                </span>
-                <span className="muted small">
-                  {formatDateTime(alert.created_at)}
-                </span>
-              </div>
+          {alerts.map((alert) => {
+            const read = Boolean(alert.read_at);
 
-              <p className="alert-message">{alert.message}</p>
+            return (
+              <li
+                key={alert.id}
+                className={read ? "alert-row is-read" : "alert-row is-unread"}
+              >
+                <span className="alert-marker" aria-hidden="true" />
 
-              <div className="alert-actions">
-                <Link href={`/projects/${alert.project_id}`} className="text-link">
-                  Open project
-                </Link>
-                {alert.read_at ? (
-                  <span className="muted small">Read</span>
-                ) : (
-                  <form action={markRead.bind(null, alert.id)}>
-                    <button type="submit" className="btn btn-small btn-ghost">
-                      Mark as read
-                    </button>
-                  </form>
-                )}
-              </div>
-            </li>
-          ))}
+                <div className="alert-main">
+                  <div className="alert-meta">
+                    <span
+                      className={
+                        alert.kind === "stall"
+                          ? "alert-kind alert-kind--stall"
+                          : "alert-kind"
+                      }
+                    >
+                      {alert.kind === "stall" ? "Stall" : "Late change"}
+                    </span>
+                    <time dateTime={alert.created_at}>
+                      {formatDateTime(alert.created_at)}
+                    </time>
+                  </div>
+
+                  <p className="alert-message">{alert.message}</p>
+
+                  <div className="alert-actions">
+                    <Link
+                      href={`/projects/${alert.project_id}`}
+                      className="text-link"
+                    >
+                      Open project <span aria-hidden="true">↗</span>
+                    </Link>
+                    {read ? (
+                      <span className="read-state">Read</span>
+                    ) : (
+                      <form action={markRead.bind(null, alert.id)}>
+                        <button
+                          type="submit"
+                          className="btn btn-small btn-ghost"
+                        >
+                          Mark as read
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </main>

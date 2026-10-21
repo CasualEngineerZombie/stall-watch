@@ -1,14 +1,45 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+import type { Metadata, Viewport } from "next";
+import { Cinzel, Montserrat, Raleway } from "next/font/google";
 import type { ReactNode } from "react";
 import { getSession } from "@/lib/session";
 import { signOut } from "@/app/auth/actions";
+import { BrandLockup } from "@/components/brand-lockup";
+import { NavLinks } from "@/components/nav-links";
 import "./globals.css";
 
+const heading = Raleway({
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600"],
+  variable: "--font-heading",
+  display: "swap",
+});
+
+const body = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const display = Cinzel({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-display",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Stall Watch",
+  title: {
+    default: "Stall Watch — Reverie3D",
+    template: "%s · Stall Watch",
+  },
   description:
-    "Finish selections for your projects, and see when one goes quiet.",
+    "Finish selection oversight for Reverie3D builders. See every project, and know the moment one goes quiet.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f7f5f3",
+  colorScheme: "light",
 };
 
 export default async function RootLayout({
@@ -19,32 +50,53 @@ export default async function RootLayout({
   const { user, orgLabel, isStaff } = await getSession();
 
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${heading.variable} ${body.variable} ${display.variable}`}
+    >
       <body>
+        <a className="skip-link" href="#main-content">
+          Skip to content
+        </a>
         {user ? (
-          <header className="app-header">
-            <Link href="/projects" className="brand">
-              Stall Watch
-            </Link>
-            <nav className="app-nav" aria-label="Main">
-              <Link href="/projects">Projects</Link>
-              <Link href="/alerts">Alerts</Link>
-              {isStaff ? <Link href="/detector">Detector</Link> : null}
-            </nav>
-            <div className="who">
-              <div className="who-text">
-                <span className="who-email">{user.email}</span>
-                <span className="muted small">{orgLabel || "No org"}</span>
+          <header className="site-header">
+            <div className="header-inner">
+              <BrandLockup href="/projects" />
+              <NavLinks isStaff={isStaff} />
+              <div className="header-account">
+                <div className="account-meta">
+                  <span className="account-org">{orgLabel || "No organisation"}</span>
+                  <span className="account-email">{user.email}</span>
+                </div>
+                <form action={signOut}>
+                  <button type="submit" className="btn btn-small btn-outline">
+                    Sign out
+                  </button>
+                </form>
               </div>
-              <form action={signOut}>
-                <button type="submit" className="btn btn-ghost">
-                  Sign out
-                </button>
-              </form>
             </div>
           </header>
         ) : null}
-        <div className={user ? "app-main" : ""}>{children}</div>
+
+        <div
+          id="main-content"
+          className={user ? "app-main" : undefined}
+          tabIndex={-1}
+        >
+          {children}
+        </div>
+
+        {user ? (
+          <footer className="site-footer">
+            <div className="footer-inner">
+              <span className="footer-brand">Stall Watch</span>
+              <span className="footer-copy">
+                Finish selection oversight · Reverie3D
+              </span>
+              <span className="footer-meta">Daily detector · 02:00 UTC</span>
+            </div>
+          </footer>
+        ) : null}
       </body>
     </html>
   );

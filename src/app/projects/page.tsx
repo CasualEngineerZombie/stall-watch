@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { NoAccess } from "@/components/no-access";
 import { formatDate, formatDays, formatStatus } from "@/lib/format";
@@ -6,8 +7,12 @@ import type { ProjectStatusRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "Projects",
+};
+
 export default async function ProjectsPage() {
-  const { supabase, memberships, isStaff } = await getSession();
+  const { supabase, memberships, isStaff, orgLabel } = await getSession();
 
   if (!memberships.length) {
     return <NoAccess />;
@@ -24,18 +29,36 @@ export default async function ProjectsPage() {
   const stalled = projects.filter((project) => project.is_stalled).length;
 
   return (
-    <main className="page">
+    <main className="shell">
       <div className="page-head">
         <div>
+          <p className="eyebrow">
+            Portfolio / {isStaff ? "All builders" : orgLabel}
+          </p>
           <h1>Projects</h1>
-          <p className="muted">
-            {isStaff ? "Every builder" : "Your organisation"} · {projects.length}{" "}
-            {projects.length === 1 ? "project" : "projects"}
+          <p className="page-lede">
+            {isStaff
+              ? "Every builder, every open selection, on one quiet page. The stall signal is computed live from the same view the detector reads."
+              : "Your finishes, room by room. A project is stalled when it sits in selection with open slots and five quiet days."}
           </p>
         </div>
-        <div className={stalled > 0 ? "stat stat-alert" : "stat"}>
-          <span className="stat-number">{stalled}</span>
-          <span className="stat-label">stalled right now</span>
+        <div
+          className="head-stat"
+          aria-label={`${stalled} stalled, ${projects.length} ${
+            projects.length === 1 ? "project" : "projects"
+          }`}
+        >
+          <span className="head-stat-label">Stalled right now</span>
+          <span
+            className={
+              stalled > 0 ? "head-stat-value is-alert" : "head-stat-value"
+            }
+          >
+            {String(stalled).padStart(2, "0")}
+          </span>
+          <span className="head-stat-note">
+            of {projects.length} {projects.length === 1 ? "project" : "projects"}
+          </span>
         </div>
       </div>
 
@@ -46,70 +69,106 @@ export default async function ProjectsPage() {
       ) : null}
 
       {projects.length === 0 ? (
-        <div className="card empty-card">
-          <h2>No projects yet</h2>
-          <p className="muted">
-            Nothing has been created for your organisation. Projects appear here as
-            soon as Reverie3D adds them.
+        <section className="empty-state">
+          <p className="eyebrow">No projects</p>
+          <h2>A quiet portfolio.</h2>
+          <p>
+            Nothing has been created for your organisation yet. Projects appear
+            here as soon as Reverie3D adds them.
           </p>
-        </div>
+        </section>
       ) : (
-        <div className="card table-card">
-          <table className="table">
+        <div className="table-wrap project-table-wrap">
+          <table className="table project-table">
+            <caption className="visually-hidden">Projects</caption>
             <thead>
               <tr>
-                <th>Project</th>
-                {isStaff ? <th>Builder</th> : null}
-                <th>Status</th>
-                <th>Selections</th>
-                <th>Quiet for</th>
-                <th>Due</th>
-                <th aria-label="Stall status" />
+                <th scope="col">Project</th>
+                <th scope="col" className="col-status">
+                  Status
+                </th>
+                <th scope="col">Selections</th>
+                <th scope="col" className="col-quiet">
+                  Quiet for
+                </th>
+                <th scope="col" className="col-due">
+                  Due
+                </th>
+                <th scope="col">
+                  <span className="visually-hidden">Stall status</span>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {projects.map((project) => (
+              {projects.map((project, index) => (
                 <tr
                   key={project.id}
-                  className={project.archived_at ? "row-archived" : undefined}
+                  className={project.archived_at ? "is-archived" : undefined}
                 >
-                  <td>
-                    <Link
-                      href={`/projects/${project.id}`}
-                      className="project-link"
+                  <td className="project-cell">
+                    <div className="project-cell-inner">
+                      <span className="project-index" aria-hidden="true">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <div className="project-identity">
+                        <Link
+                          href={`/projects/${project.id}`}
+                          className="project-name"
+                        >
+                          {project.name}
+                        </Link>
+                        <span className="project-org">
+                          {project.org_name}
+                          {project.archived_at ? " · Archived" : ""}
+                        </span>
+                        <span className="project-mobile-meta">
+                          {project.status === "selection_phase"
+                            ? `${formatDays(project.days_quiet)} quiet`
+                            : formatStatus(project.status)}
+                          {` · Due ${formatDate(project.selection_due_date)}`}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="col-status">
+                    <span
+                      className="project-status"
+                      data-status={project.status}
                     >
-                      {project.name}
-                    </Link>
-                    {project.archived_at ? (
-                      <span className="tag">archived</span>
-                    ) : null}
-                  </td>
-                  {isStaff ? (
-                    <td className="muted">{project.org_name}</td>
-                  ) : null}
-                  <td>
-                    <span className="status-dot" data-status={project.status} />
-                    {formatStatus(project.status)}
+                      <span className="status-dot" aria-hidden="true" />
+                      {formatStatus(project.status)}
+                    </span>
                   </td>
                   <td>
-                    {project.filled_slots} of {project.total_slots}
-                    {project.empty_slots > 0 ? (
-                      <span className="muted small">
+                    <span className="selection-count">
+                      {project.filled_slots}
+                      <span className="selection-total">
                         {" "}
-                        · {project.empty_slots} empty
+                        / {project.total_slots}
+                      </span>
+                    </span>
+                    {project.empty_slots > 0 ? (
+                      <span className="table-note">
+                        {project.empty_slots} open
                       </span>
                     ) : null}
                   </td>
-                  <td>
+                  <td className="col-quiet">
                     {project.status === "selection_phase"
                       ? formatDays(project.days_quiet)
                       : "—"}
                   </td>
-                  <td>{formatDate(project.selection_due_date)}</td>
-                  <td>
+                  <td className="col-due">
+                    {formatDate(project.selection_due_date)}
+                  </td>
+                  <td className="project-flag-cell">
                     {project.is_stalled ? (
                       <span className="badge badge-stalled">Stalled</span>
-                    ) : null}
+                    ) : (
+                      <span className="table-dash" aria-hidden="true">
+                        —
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

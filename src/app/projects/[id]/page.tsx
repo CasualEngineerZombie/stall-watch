@@ -81,24 +81,29 @@ export default async function ProjectPage({
       : 0;
 
   return (
-    <main className="page">
+    <main className="shell">
       <Link href="/projects" className="back-link">
-        ← All projects
+        <span aria-hidden="true">←</span> All projects
       </Link>
 
-      <div className="page-head">
+      <div className="page-head detail-head">
         <div>
+          <p className="eyebrow">
+            {project.org_name} / {formatStatus(project.status)}
+          </p>
           <h1>{project.name}</h1>
-          <p className="muted">
-            {project.org_name} · {formatStatus(project.status)}
-            {project.archived_at ? " · archived" : ""}
+          <p className="page-lede">
+            Every finish for this home, grouped by room. Each change is recorded
+            against the people who made it.
           </p>
         </div>
-        <div className="head-badges">
-          {project.is_stalled ? (
+        <div className="detail-status">
+          {project.archived_at ? (
+            <span className="badge badge-outline">Archived</span>
+          ) : project.is_stalled ? (
             <span className="badge badge-stalled">Stalled</span>
           ) : (
-            <span className="badge badge-ok">No stall</span>
+            <span className="badge badge-outline">No stall</span>
           )}
         </div>
       </div>
@@ -115,48 +120,56 @@ export default async function ProjectPage({
       ) : null}
 
       {project.is_stalled ? (
-        <div className="notice notice-warning">
-          <strong>This project has gone quiet.</strong> No builder activity for{" "}
-          {formatDays(project.days_quiet)}, and {project.empty_slots} of{" "}
-          {project.total_slots} slots are still empty.
-        </div>
+        <aside className="stall-band" aria-label="Selection stalled">
+          <div>
+            <p className="eyebrow eyebrow--light">Selection stalled</p>
+            <p className="stall-band-title">This project has gone quiet.</p>
+            <p className="stall-band-copy">
+              No builder activity for {formatDays(project.days_quiet)}, and{" "}
+              {project.empty_slots} of {project.total_slots} slots are still
+              empty.
+            </p>
+          </div>
+          <a href="#slots" className="text-link text-link--light">
+            Review open slots <span aria-hidden="true">↓</span>
+          </a>
+        </aside>
       ) : null}
 
       {readOnly ? (
-        <div className="notice">
+        <p className="notice">
           This project is archived. Selections are read-only.
-        </div>
+        </p>
       ) : null}
 
-      <div className="stat-row">
-        <div className="card stat-card">
-          <span className="stat-label">Selections</span>
-          <span className="stat-number">
+      <div className="summary-band">
+        <div className="summary-cell">
+          <span className="summary-label">Selections</span>
+          <span className="summary-value">
             {project.filled_slots}
-            <span className="muted"> / {project.total_slots}</span>
+            <span className="summary-fraction"> / {project.total_slots}</span>
           </span>
           <div className="progress" aria-hidden="true">
             <div className="progress-fill" style={{ width: `${progress}%` }} />
           </div>
         </div>
-        <div className="card stat-card">
-          <span className="stat-label">Quiet for</span>
-          <span className="stat-number">
+        <div className="summary-cell">
+          <span className="summary-label">Quiet for</span>
+          <span className="summary-value">
             {project.status === "selection_phase"
               ? formatDays(project.days_quiet)
               : "—"}
           </span>
-          <span className="muted small">
-            Last builder activity:{" "}
-            {formatDateTime(project.quiet_since)}
+          <span className="summary-note">
+            Last builder activity {formatDateTime(project.quiet_since)}
           </span>
         </div>
-        <div className="card stat-card">
-          <span className="stat-label">Due</span>
-          <span className="stat-number">
+        <div className="summary-cell">
+          <span className="summary-label">Selection due</span>
+          <span className="summary-value">
             {formatDate(project.selection_due_date)}
           </span>
-          <span className="muted small">
+          <span className="summary-note">
             Phase started {formatDate(project.selection_phase_started_at)}
           </span>
         </div>
@@ -168,92 +181,121 @@ export default async function ProjectPage({
         </p>
       ) : null}
 
-      {slots.length === 0 ? (
-        <div className="card empty-card">
-          <h2>No slots</h2>
-          <p className="muted">
-            This project has nothing to select yet. Reverie3D adds the slots.
+      <section id="slots" className="slots-section" aria-labelledby="slots-title">
+        <div className="section-head">
+          <div>
+            <p className="eyebrow">Finishes</p>
+            <h2 id="slots-title" className="section-title">
+              Room by room
+            </h2>
+          </div>
+          <p className="section-note">
+            {project.filled_slots} of {project.total_slots} selected ·{" "}
+            {project.empty_slots} open
           </p>
         </div>
-      ) : (
-        rooms.map((room) => {
-          const roomSlots = slots.filter((slot) => slot.room === room);
-          return (
-            <section key={room} className="card slot-card">
-              <div className="slot-head">
-                <h2>{room}</h2>
-                <span className="muted small">
-                  {roomSlots.filter((slot) => selectionBySlot.has(slot.id)).length}{" "}
-                  of {roomSlots.length} picked
-                </span>
-              </div>
 
-              <div className="slot-list">
-                {roomSlots.map((slot) => {
-                  const selection = selectionBySlot.get(slot.id);
+        {slots.length === 0 ? (
+          <div className="empty-state">
+            <p className="eyebrow">No slots</p>
+            <h2>Nothing to select yet.</h2>
+            <p>This project has no rooms or finishes. Reverie3D adds the slots.</p>
+          </div>
+        ) : (
+          rooms.map((room, index) => {
+            const roomSlots = slots.filter((slot) => slot.room === room);
+            const roomSelected = roomSlots.filter((slot) =>
+              selectionBySlot.has(slot.id),
+            ).length;
 
-                  return (
-                    <div key={slot.id} className="slot-row">
-                      <div className="slot-label">
-                        <span className="slot-category">{slot.category}</span>
-                        <span
-                          className={
-                            selection ? "slot-product" : "slot-product muted"
-                          }
-                        >
-                          {selection ? selection.product_name : "Not selected"}
-                        </span>
-                        {selection ? (
-                          <span className="muted small">
-                            updated {formatDateTime(selection.updated_at)}
-                          </span>
-                        ) : null}
-                      </div>
+            return (
+              <section
+                key={room}
+                className="room"
+                aria-labelledby={`room-title-${index}`}
+              >
+                <header className="room-head">
+                  <span className="room-index" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <h3 id={`room-title-${index}`}>{room}</h3>
+                  <span className="room-count">
+                    {roomSelected} / {roomSlots.length} selected
+                  </span>
+                </header>
 
-                      {readOnly ? null : (
-                        <div className="slot-actions">
-                          <form
-                            action={setSelection.bind(null, project.id, slot.id)}
-                            className="slot-form"
+                <div className="slot-list">
+                  {roomSlots.map((slot) => {
+                    const selection = selectionBySlot.get(slot.id);
+
+                    return (
+                      <div key={slot.id} className="slot-row">
+                        <div className="slot-label">
+                          <span className="slot-category">{slot.category}</span>
+                          <span
+                            className={
+                              selection
+                                ? "slot-product"
+                                : "slot-product slot-product--empty"
+                            }
                           >
-                            <input
-                              name="product_name"
-                              defaultValue={selection?.product_name ?? ""}
-                              placeholder="Product name"
-                              maxLength={120}
-                              required
-                              aria-label={`${slot.room} ${slot.category} product`}
-                            />
-                            <button type="submit" className="btn btn-small">
-                              Save
-                            </button>
-                          </form>
-                          {selection ? (
+                            {selection ? selection.product_name : "Not selected"}
+                          </span>
+                          <span className="slot-updated">
+                            {selection
+                              ? `Updated ${formatDateTime(selection.updated_at)}`
+                              : "Open selection"}
+                          </span>
+                        </div>
+
+                        {readOnly ? null : (
+                          <div className="slot-actions">
                             <form
-                              action={clearSelection.bind(
-                                null,
-                                project.id,
-                                slot.id,
-                              )}
+                              action={setSelection.bind(null, project.id, slot.id)}
+                              className="slot-form"
                             >
+                              <input
+                                name="product_name"
+                                defaultValue={selection?.product_name ?? ""}
+                                placeholder="Product name"
+                                maxLength={120}
+                                required
+                                aria-label={`${slot.room} ${slot.category} product`}
+                              />
                               <button
                                 type="submit"
-                                className="btn btn-small btn-ghost"
+                                className="btn btn-small btn-primary"
                               >
-                                Clear
+                                Save
                               </button>
                             </form>
-                          ) : null}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })
-      )}
+                            {selection ? (
+                              <form
+                                action={clearSelection.bind(
+                                  null,
+                                  project.id,
+                                  slot.id,
+                                )}
+                              >
+                                <button
+                                  type="submit"
+                                  className="btn btn-small btn-ghost"
+                                >
+                                  Clear
+                                </button>
+                              </form>
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })
+        )}
+      </section>
     </main>
   );
 }

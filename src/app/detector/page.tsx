@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NoAccess } from "@/components/no-access";
 import { formatDateTime, formatDuration } from "@/lib/format";
@@ -7,11 +8,9 @@ import { runDetectorNow } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-function statusBadge(status: JobRunRow["status"]) {
-  if (status === "succeeded") return "badge badge-ok";
-  if (status === "failed") return "badge badge-stalled";
-  return "badge badge-info";
-}
+export const metadata: Metadata = {
+  title: "Detector",
+};
 
 export default async function DetectorPage({
   searchParams,
@@ -47,13 +46,14 @@ export default async function DetectorPage({
   const lastRun = runs[0];
 
   return (
-    <main className="page">
+    <main className="shell">
       <div className="page-head">
         <div>
+          <p className="eyebrow">Operations</p>
           <h1>Detector</h1>
-          <p className="muted">
-            Stall Watch runs daily and alerts each builder&apos;s admins. You can
-            also run it now.
+          <p className="page-lede">
+            Stall Watch runs daily and alerts each builder&apos;s admins. Run it
+            on demand when you need the current signal now.
           </p>
         </div>
         <form action={runDetectorNow}>
@@ -79,77 +79,101 @@ export default async function DetectorPage({
         </p>
       ) : null}
 
-      <div className="stat-row">
-        <div className="card stat-card">
-          <span className="stat-label">Stalled right now</span>
-          <span className="stat-number">{stalledCount ?? 0}</span>
-          <span className="muted small">Across every builder</span>
+      <div className="summary-band detector-summary">
+        <div className="summary-cell">
+          <span className="summary-label">Stalled right now</span>
+          <span className="summary-value">{stalledCount ?? 0}</span>
+          <span className="summary-note">Across every builder</span>
         </div>
-        <div className="card stat-card">
-          <span className="stat-label">Last run</span>
-          <span className="stat-number">
+        <div className="summary-cell">
+          <span className="summary-label">Last run</span>
+          <span className="summary-value summary-value--status">
             {lastRun ? lastRun.status : "—"}
           </span>
-          <span className="muted small">
+          <span className="summary-note">
             {lastRun ? formatDateTime(lastRun.started_at) : "Never run"}
           </span>
         </div>
-        <div className="card stat-card">
-          <span className="stat-label">Schedule</span>
-          <span className="stat-number">02:00 UTC</span>
-          <span className="muted small">Daily, via pg_cron</span>
+        <div className="summary-cell">
+          <span className="summary-label">Schedule</span>
+          <span className="summary-value">02:00 UTC</span>
+          <span className="summary-note">Daily, via pg_cron</span>
         </div>
       </div>
 
-      <section className="card table-card">
-        <div className="slot-head">
-          <h2>Run history</h2>
-          <span className="muted small">Newest first · last 50 runs</span>
+      <section className="panel run-panel" aria-labelledby="run-history-title">
+        <div className="panel-head">
+          <div>
+            <p className="eyebrow">Log</p>
+            <h2 id="run-history-title" className="section-title section-title--small">
+              Run history
+            </h2>
+          </div>
+          <span className="section-note">Newest first · last 50 runs</span>
         </div>
 
         {runs.length === 0 ? (
-          <p className="muted empty-inline">
-            No runs recorded yet. Use <strong>Run now</strong> to start one.
-          </p>
+          <div className="empty-state empty-state--inline">
+            <p className="eyebrow">No runs</p>
+            <h2>No runs recorded yet.</h2>
+            <p>
+              Use <strong>Run now</strong> to start the first detector run. The
+              log will keep the flag count, alerts created and any failure.
+            </p>
+          </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Started</th>
-                <th>Trigger</th>
-                <th>Status</th>
-                <th>Flagged</th>
-                <th>Alerts</th>
-                <th>Duration</th>
-                <th>Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {runs.map((run) => (
-                <tr key={run.id} className={run.status === "failed" ? "row-failed" : undefined}>
-                  <td>{formatDateTime(run.started_at)}</td>
-                  <td>{run.trigger_kind}</td>
-                  <td>
-                    <span className={statusBadge(run.status)}>{run.status}</span>
-                  </td>
-                  <td>{run.projects_flagged}</td>
-                  <td>{run.alerts_created}</td>
-                  <td>{formatDuration(run.started_at, run.finished_at)}</td>
-                  <td className="error-cell">
-                    {run.error_message ? (
-                      <span title={run.error_message}>{run.error_message}</span>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
+          <div className="table-wrap">
+            <table className="table run-table">
+              <caption className="visually-hidden">Detector run history</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Started</th>
+                  <th scope="col">Trigger</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Flagged</th>
+                  <th scope="col">Alerts</th>
+                  <th scope="col">Duration</th>
+                  <th scope="col">Error</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {runs.map((run) => (
+                  <tr
+                    key={run.id}
+                    className={run.status === "failed" ? "is-failed" : undefined}
+                  >
+                    <td className="run-date">{formatDateTime(run.started_at)}</td>
+                    <td className="run-trigger">{run.trigger_kind}</td>
+                    <td>
+                      <span
+                        className="run-status"
+                        data-status={run.status}
+                      >
+                        <span className="run-status-dot" aria-hidden="true" />
+                        {run.status}
+                      </span>
+                    </td>
+                    <td className="run-number">{run.projects_flagged}</td>
+                    <td className="run-number">{run.alerts_created}</td>
+                    <td className="run-date">
+                      {formatDuration(run.started_at, run.finished_at)}
+                    </td>
+                    <td className="error-cell">
+                      {run.error_message ? (
+                        <span title={run.error_message}>{run.error_message}</span>
+                      ) : (
+                        <span className="table-dash">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
 
-      <p className="muted small">
+      <p className="footnote">
         Automatic runs need pg_cron enabled in Supabase. If it is not, this page
         still works and <strong>Run now</strong> still runs the detector. See
         SETUP.md.
