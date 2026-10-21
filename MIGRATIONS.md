@@ -23,6 +23,8 @@ Never change an applied migration. Add a new one, and add a row here in the same
 | 12 | `20251021098000_stall_detector_rpc.sql` | `builder.run_stall_detector_now()` — authenticated execute, in-body `private.is_staff()` check. | Drop the function. |
 | 13 | `20251021099000_stall_detector_schedule.sql` | pg_cron job `stall_watch_detector`, daily 02:00 UTC. No-op with a notice when the extension is absent. | `select cron.unschedule('stall_watch_detector');` |
 | 14 | `20251021100000_late_change_alerts.sql` | Bonus: `private.alert_late_change()` + `trg_history_late_change`, fans out to staff on a builder change after revision, dedupe per history row. | Drop trigger, then function. |
+| 15 | `20251021101000_selection_history_uuid_primary_key.sql` | Replaces `selection_history`'s bigint identity primary key with a UUID default `gen_random_uuid()`, matching every other business table. | Lossy; restore the table from a pre-migration backup. |
+| 16 | `20251021102000_harden_rls_auto_enable.sql` | If Supabase's platform-managed `public.rls_auto_enable()` event-trigger helper is installed, pins `search_path = ''` and revokes `EXECUTE` from `public`, `anon` and `authenticated`. | Restore `search_path = pg_catalog` and grant execute to `public`. |
 
 ## Rules for the next change
 

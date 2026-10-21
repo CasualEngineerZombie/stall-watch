@@ -44,6 +44,18 @@ begin
 
   perform pg_temp.assert_true(v_tables >= 9,
     format('expected at least 9 tables, found %s', v_tables));
+
+  perform pg_temp.assert_true(
+    exists (
+      select 1
+        from information_schema.columns
+       where table_schema = 'builder'
+         and table_name = 'selection_history'
+         and column_name = 'id'
+         and data_type = 'uuid'
+         and column_default = 'gen_random_uuid()'
+    ),
+    'selection_history.id must be a uuid with a gen_random_uuid() default');
 end;
 $$;
 
