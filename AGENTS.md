@@ -97,9 +97,10 @@ Quiet anchor = `greatest(last builder history event, selection_phase_started_at)
 `null` means never stalled. A project stalls when: `status = 'selection_phase'`, not
 archived, at least one empty slot, and `now() - anchor >= 5 days`.
 
-Duplicate prevention is the unique index `(project_id, kind, dedupe_key)` on
-`builder.alerts` plus `on conflict do nothing`. For stalls, `dedupe_key` is the anchor
-timestamp; do not replace it with "did a run happen today".
+Duplicate prevention is the unique index `(project_id, kind, dedupe_key, user_id)` on
+`builder.alerts` plus `on conflict do nothing`. `user_id` is part of the key because one
+stall alerts several admins. For stalls, `dedupe_key` is the anchor timestamp; do not
+replace it with "did a run happen today".
 
 ## Failure semantics
 
@@ -128,3 +129,13 @@ move the run-row insert inside the sub-block.
   eyeballing the migration.
 - No secrets in the diff; no service-role key anywhere.
 - `DESIGN.md` and `MIGRATIONS.md` updated if the change alters a decision or the schema.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

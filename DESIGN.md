@@ -91,7 +91,9 @@ distribute.
 **What prevents duplicate alerts.** Each run recomputes the quiet anchor — the later of
 the last `actor_kind = 'builder'` history event and `selection_phase_started_at` — and
 uses it as the dedupe key. `alerts` has a unique index on
-`(project_id, kind, dedupe_key)`, and the insert is `on conflict do nothing`. Two runs
+`(project_id, kind, dedupe_key, user_id)`, and the insert is `on conflict do nothing`.
+`user_id` is in the key because a stall fans out to several admins; without it the second
+admin's alert would collide with the first. Two runs
 in a row produce the same key and are harmless; two overlapping runs are serialised by
 a transaction-scoped advisory lock. If a run is missed entirely, the next one still
 computes the same key from the data, so nothing is lost. When a builder makes a
